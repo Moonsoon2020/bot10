@@ -202,6 +202,11 @@ class DB:  # Класс для работы с Базой Данных
         return self.con.cursor().execute(f'''SELECT post FROM Users
                  WHERE id_tg = \'{id_tg}\'''').fetchall()[0][0]
 
+    def is_user(self, id_tg):
+        """ Проверка регистрации пользователя """
+        return len(self.con.cursor().execute(f'''SELECT name FROM Users
+                 WHERE id_tg = \'{id_tg}\'''').fetchall()) != 0
+
     def get_user_company(self, id_tg):
         """ получение компании, в которой находится пользователь """
         return self.con.cursor().execute(f'''SELECT company FROM Users

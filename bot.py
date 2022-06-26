@@ -8,6 +8,7 @@ from telegram.ext import Updater, MessageHandler, Filters, ConversationHandler
 from telegram.ext import CommandHandler
 from for_DBwork import DB
 
+
 # Импорт необходимых библиотек
 # Запускаем логгирование
 logging.basicConfig(filename='logging.log',
@@ -15,7 +16,7 @@ logging.basicConfig(filename='logging.log',
                     )
 
 logger = logging.getLogger(__name__)
-TOKEN = '5355485794:AAGBNp_ZMuEw8vK1t9UiuuDOV8yOY0OQN_E'  # токен бота
+TOKEN = '5342995443:AAEBqyRLrd5AmHEEhCNLyfHVy3td3Qvw-Ec'  # токен бота
 SUPER_PASSWORD = '777'  # пароль для админа
 
 
@@ -24,7 +25,7 @@ class Bot:
         self.ControlBD = DB()
         self.updater = Updater(TOKEN)
         self.dp = self.updater.dispatcher
-        # schedule.every(30).seconds.do(self.send_messange, self.dp)
+        #   schedule.every(1).seconds.do(self.send_messange, self.dp)
         schedule.every().day.at("10:00").do(self.send_messange, self.dp)  # рассылка уведомлений
         threading.Thread(target=self.threat).start()
         # сценарии
@@ -37,8 +38,7 @@ class Bot:
                 1: [MessageHandler(Filters.text & ~Filters.command, self.info, pass_user_data=True)],
                 2: [MessageHandler(Filters.text & ~Filters.command, self.password_request, pass_user_data=True)],
                 3: [MessageHandler(Filters.text & ~Filters.command, self.reg_first_company, pass_user_data=True)],
-                4: [MessageHandler(Filters.text & ~Filters.command, self.reg_first_company_password,
-                                   pass_user_data=True)]
+                4: [MessageHandler(Filters.text & ~Filters.command, self.reg_first_company_password, pass_user_data=True)]
             },
             # Точка прерывания диалога. В данном случае — команда /stop.
             allow_reentry=False,
@@ -159,7 +159,7 @@ class Bot:
         )
         reply_keyboard = [['/help', '/stop']]
         global markup
-        markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=False)
+        markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=False, resize_keyboard=True)
         self.dp.add_handler(CommandHandler("help", self.helps))
         self.dp.add_handler(CommandHandler("unbinding", self.unbinding_company))
         self.dp.add_handler(CommandHandler("get_xlsx_file", self.get_file))
@@ -197,6 +197,11 @@ class Bot:
                 telegram.ext.CallbackContext(dp).bot.sendMessage(chat_id=id_, text=text)
 
     def start(self, update, context):  # старт
+        if self.ControlBD.is_user(update.message.chat.id):
+            text = 'Вы уже зарегистрированы.'
+            context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
+            self.pprint('/start', update.message.chat.username, text)
+            return ConversationHandler.END
         text = f'Здравствуйте! Я смогу ответить на возникшие у Вас вопросы, но ' \
                f'для начала нужно пройти регистрацию. Напишите, пожалуйста, Ваши ФИО'
         context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
@@ -266,6 +271,7 @@ class Bot:
         text = 'Регистрация отменена.'
         context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
         self.pprint('/stop', update.message.chat.username, text)
+        return ConversationHandler.END
 
     def get_question(self, update, context):  # получить ответ
         company = self.ControlBD.get_user_company(str(update.message.from_user.id))
@@ -325,13 +331,21 @@ class Bot:
         self.pprint('/help', update.message.chat.username, text)
 
     def unbinding_company(self, update, context):  # выход из компании
+        if self.checking_status(update) == 1:
+            text = 'Для выполнения это функции вы должны быть обычным пользователем.'
+            context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
+            self.pprint('/', update.message.chat.username, text)
+            return ConversationHandler.END
         self.ControlBD.remove_user_company(str(update.message.from_user.id), '')
         text = f'{self.ControlBD.get_user_name(str(update.message.from_user.id))}, Вы вышли из компании.'
         context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
         self.pprint('/unbinding', update.message.chat.username, text)
 
     def get_file(self, update, context):  # получение xlsx файла с информацией из БД
-        if self.ControlBD.get_user_post(update.message.chat.id) == 0:
+        if self.checking_status(update) == 0:
+            text = 'Для выполнения этой функции вы должны быть администратором.'
+            context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
+            self.pprint('/get_file', update.message.chat.username, text)
             return
         text = f'Подождите, происходит формирование таблицы, загрузка и отправление... ' \
                f'Это займет несколько минут. Спасибо за ожидание.'
@@ -349,6 +363,11 @@ class Bot:
         context.bot.sendDocument(chat_id=update.message.from_user.id, document=open('Таблица_Excel_БД.xlsx', mode='rb'))
 
     def all_question(self, update, context):  # получение всех вопросов
+        if self.checking_status(update) == 1:
+            text = 'Для выполнения это функции вы должны быть обычным пользователем.'
+            context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
+            self.pprint('/', update.message.chat.username, text)
+            return ConversationHandler.END
         company = self.ControlBD.get_user_company(str(update.message.from_user.id))
         questions = self.ControlBD.get_questions(company)
         if questions:
@@ -373,6 +392,7 @@ class Bot:
             text = 'Успешно! Ваша роль изменена.'
             context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
             self.pprint(password, update.message.chat.username, text)
+            self.helps(update, context)
             return ConversationHandler.END
         else:
             text = f'Для того чтобы сменить роль, нужно '\
@@ -388,6 +408,11 @@ class Bot:
         return ConversationHandler.END
 
     def linking_company(self, update, context):  # регистрация в компании
+        if self.checking_status(update) == 1:
+            text = 'Для выполнения это функции вы должны быть обычным пользователем.'
+            context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
+            self.pprint('/', update.message.chat.username, text)
+            return ConversationHandler.END
         logger.info('привязка к компании')
         text = f'{self.ControlBD.get_user_name(str(update.message.from_user.id))}, введ' \
                f'ите название компании, в которую хотите вступить.'
@@ -474,9 +499,9 @@ class Bot:
 
     def delete_company(self, update, context):  # удаление компании
         if self.checking_status(update) == 0:
-            text = 'Для создания компании Вы должны быть администратором.'
+            text = 'Для выполнения это функции вы должны быть администратором.'
             context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
-            self.pprint('/stop', update.message.chat.username, text)
+            self.pprint('/', update.message.chat.username, text)
             return ConversationHandler.END
         text = f'Введите название компании, которую хотите' \
                f' удалить. ВНИМАНИЕ: это действие отменить будет невозможно.'''
@@ -485,23 +510,27 @@ class Bot:
         return 1
 
     def delete_comp(self, update, context):  # удаление компании
-        a = update.message.text
-        self.ControlBD.delete_company(a)
+        self.ControlBD.delete_company(update.message.text)
         text = 'Компания удалена.'
         context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
-        self.pprint(a, update.message.chat.username, text)
+        self.pprint(update.message.chat, update.message.chat.username, text)
         return ConversationHandler.END
 
     def stop_del_company(self, update, context):
         text = 'Отмена удаления компании.'
         context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
-        self.pprint(a, update.message.chat.username, text)
+        self.pprint('/stop', update.message.chat.username, text)
         return ConversationHandler.END
 
     def checking_status(self, update):  # проверка роли пользователя
         return False if self.ControlBD.get_user_post(update.message.from_user.id) == 0 else True
 
     def add_mailing(self, update, context):  # добавление рассылки
+        if self.checking_status(update) == 0:
+            text = 'Для выполнения это функции вы должны быть администратором.'
+            context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
+            self.pprint('/', update.message.chat.username, text)
+            return ConversationHandler.END
         text = f'{self.ControlBD.get_user_name(str(update.message.from_user.id))}, уведомления для '\
                f'пользователей какой компании Вы хотите добавить/удалить?'
         context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
@@ -563,6 +592,11 @@ class Bot:
         return ConversationHandler.END
 
     def add_question(self, update, context):  # редактирование вопроса
+        if self.checking_status(update) == 0:
+            text = 'Для выполнения это функции вы должны быть администратором.'
+            context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
+            self.pprint('/', update.message.chat.username, text)
+            return ConversationHandler.END
         text = f'{self.ControlBD.get_user_name(str(update.message.from_user.id))}, введите вопрос,' \
                f' который нужно добавить/редактировать/удалить.'
         context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
@@ -584,8 +618,7 @@ class Bot:
         return 3
 
     def write_question_add(self, update, context):  # добавление вопроса
-        a = update.message.text
-        self.ControlBD.add_question(context.user_data['question'], context.user_data['answer'], a)
+        self.ControlBD.add_question(context.user_data['question'], context.user_data['answer'], update.message.text)
         text = 'Вопрос добавлен.'
         context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
         self.pprint(update.message.text, update.message.chat.username, text)
@@ -622,10 +655,16 @@ class Bot:
             self.ControlBD.redact_question(context.user_data['question'], context.user_data['answer'],
                                update.message.text)
         else:
-            update.message.reply_text('Ошибка: данного вопроса у данной компании не существует.')
-            update.message.reply_text('Введите вопрос, который нужно добавить/редактировать/удалить.')
+            text = 'Ошибка: данного вопроса у данной компании не существует.'
+            context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
+            self.pprint(update.message.text, update.message.chat.username, text)
+            text = 'Введите вопрос, который нужно добавить/редактировать/удалить.'
+            context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
+            self.pprint(update.message.text, update.message.chat.username, text)
             return 1
-        update.message.reply_text('Вопрос изменен.')
+        text = 'Вопрос изменен.'
+        context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
+        self.pprint(update.message.text, update.message.chat.username, text)
         return ConversationHandler.END
 
 
