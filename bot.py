@@ -16,7 +16,7 @@ logging.basicConfig(filename='logging.log',
                     )
 
 logger = logging.getLogger(__name__)
-TOKEN = '5342995443:AAEBqyRLrd5AmHEEhCNLyfHVy3td3Qvw-Ec'  # токен бота
+TOKEN = '5355485794:AAGBNp_ZMuEw8vK1t9UiuuDOV8yOY0OQN_E'  # токен бота
 SUPER_PASSWORD = '777'  # пароль для админа
 
 
@@ -274,6 +274,11 @@ class Bot:
         return ConversationHandler.END
 
     def get_question(self, update, context):  # получить ответ
+        if not self.ControlBD.is_user(update.message.chat.id):
+            text = 'Вы не зарегестрированы.'
+            context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
+            self.pprint(update.message.text, update.message.chat.username, text)
+            return
         company = self.ControlBD.get_user_company(str(update.message.from_user.id))
         if company is None or company == '':
             if self.ControlBD.get_user_post(str(update.message.from_user.id)) == 0:
@@ -291,6 +296,11 @@ class Bot:
         self.pprint(update.message.text, update.message.chat.username, text)
 
     def helps(self, update, context):
+        if not self.ControlBD.is_user(update.message.chat.id):
+            text = 'Вы не зарегестрированы.'
+            context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
+            self.pprint(update.message.text, update.message.chat.username, text)
+            return
         if self.ControlBD.get_user_post(str(update.message.from_user.id)) == 1:
             text = f'Привет, уважаемый пользователь,' \
                    f' {self.ControlBD.get_user_name(str(update.message.from_user.id))}, Ваша роль - Admin.\n' \
@@ -331,6 +341,11 @@ class Bot:
         self.pprint('/help', update.message.chat.username, text)
 
     def unbinding_company(self, update, context):  # выход из компании
+        if not self.ControlBD.is_user(update.message.chat.id):
+            text = 'Вы не зарегестрированы.'
+            context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
+            self.pprint(update.message.text, update.message.chat.username, text)
+            return ConversationHandler.END
         if self.checking_status(update) == 1:
             text = 'Для выполнения это функции вы должны быть обычным пользователем.'
             context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
@@ -342,6 +357,11 @@ class Bot:
         self.pprint('/unbinding', update.message.chat.username, text)
 
     def get_file(self, update, context):  # получение xlsx файла с информацией из БД
+        if not self.ControlBD.is_user(update.message.chat.id):
+            text = 'Вы не зарегестрированы.'
+            context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
+            self.pprint(update.message.text, update.message.chat.username, text)
+            return
         if self.checking_status(update) == 0:
             text = 'Для выполнения этой функции вы должны быть администратором.'
             context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
@@ -363,11 +383,16 @@ class Bot:
         context.bot.sendDocument(chat_id=update.message.from_user.id, document=open('Таблица_Excel_БД.xlsx', mode='rb'))
 
     def all_question(self, update, context):  # получение всех вопросов
+        if not self.ControlBD.is_user(update.message.chat.id):
+            text = 'Вы не зарегестрированы.'
+            context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
+            self.pprint(update.message.text, update.message.chat.username, text)
+            return
         if self.checking_status(update) == 1:
             text = 'Для выполнения это функции вы должны быть обычным пользователем.'
             context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
             self.pprint('/', update.message.chat.username, text)
-            return ConversationHandler.END
+            return
         company = self.ControlBD.get_user_company(str(update.message.from_user.id))
         questions = self.ControlBD.get_questions(company)
         if questions:
@@ -379,6 +404,11 @@ class Bot:
         self.pprint('/all_question', update.message.chat.username, text)
 
     def edit_post(self, update, context):  # редактирование роли
+        if not self.ControlBD.is_user(update.message.chat.id):
+            text = 'Вы не зарегестрированы.'
+            context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
+            self.pprint(update.message.text, update.message.chat.username, text)
+            return ConversationHandler.END
         text = f'{self.ControlBD.get_user_name(str(update.message.from_user.id))}, введите пароль.'
         context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
         self.pprint('/edit_post', update.message.chat.username, text)
@@ -408,6 +438,11 @@ class Bot:
         return ConversationHandler.END
 
     def linking_company(self, update, context):  # регистрация в компании
+        if not self.ControlBD.is_user(update.message.chat.id):
+            text = 'Вы не зарегестрированы.'
+            context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
+            self.pprint(update.message.text, update.message.chat.username, text)
+            return ConversationHandler.END
         if self.checking_status(update) == 1:
             text = 'Для выполнения это функции вы должны быть обычным пользователем.'
             context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
@@ -455,6 +490,11 @@ class Bot:
         return ConversationHandler.END
 
     def input_name_company(self, update, context):  # создание компании
+        if not self.ControlBD.is_user(update.message.chat.id):
+            text = 'Вы не зарегестрированы.'
+            context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
+            self.pprint(update.message.text, update.message.chat.username, text)
+            return ConversationHandler.END
         if self.checking_status(update) == 0:
             text = 'Для создания компании вы должны быть администратором.'
             context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
@@ -498,6 +538,11 @@ class Bot:
         return ConversationHandler.END
 
     def delete_company(self, update, context):  # удаление компании
+        if not self.ControlBD.is_user(update.message.chat.id):
+            text = 'Вы не зарегестрированы.'
+            context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
+            self.pprint(update.message.text, update.message.chat.username, text)
+            return ConversationHandler.END
         if self.checking_status(update) == 0:
             text = 'Для выполнения это функции вы должны быть администратором.'
             context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
@@ -526,6 +571,11 @@ class Bot:
         return False if self.ControlBD.get_user_post(update.message.from_user.id) == 0 else True
 
     def add_mailing(self, update, context):  # добавление рассылки
+        if not self.ControlBD.is_user(update.message.chat.id):
+            text = 'Вы не зарегестрированы.'
+            context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
+            self.pprint(update.message.text, update.message.chat.username, text)
+            return ConversationHandler.END
         if self.checking_status(update) == 0:
             text = 'Для выполнения это функции вы должны быть администратором.'
             context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
@@ -592,6 +642,11 @@ class Bot:
         return ConversationHandler.END
 
     def add_question(self, update, context):  # редактирование вопроса
+        if not self.ControlBD.is_user(update.message.chat.id):
+            text = 'Вы не зарегестрированы.'
+            context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
+            self.pprint(update.message.text, update.message.chat.username, text)
+            return ConversationHandler.END
         if self.checking_status(update) == 0:
             text = 'Для выполнения это функции вы должны быть администратором.'
             context.bot.sendMessage(chat_id=update.message.chat.id, text=text)
