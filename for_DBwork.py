@@ -9,37 +9,37 @@ class DB:  # Класс для работы с Базой Данных
     id         INTEGER PRIMARY KEY
                        UNIQUE
                        NOT NULL,
-    surname    TEXT    NOT NULL,
-    name       TEXT    NOT NULL,
-    patronymic TEXT,
+    surname    text    NOT NULL,
+    name       text    NOT NULL,
+    patronymic text,
     post       BOOLEAN NOT NULL,
-    company    TEXT,
-    id_tg      TEXT    NOT NULL
+    company    text,
+    id_tg      text    NOT NULL
 );"""
         create_table2 = """CREATE TABLE IF NOT EXISTS Questions (
     id      INTEGER PRIMARY KEY
                     UNIQUE
                     NOT NULL,
-    text_q  TEXT    NOT NULL,
-    text_a  TEXT    NOT NULL,
-    company TEXT    NOT NULL
+    text_q  text    NOT NULL,
+    text_a  text    NOT NULL,
+    company text    NOT NULL
 );"""
         create_table3 = """CREATE TABLE IF NOT EXISTS Mailings (
     id      INTEGER PRIMARY KEY
                     UNIQUE
                     NOT NULL,
-    text    TEXT    NOT NULL,
-    date    TEXT    NOT NULL,
-    company TEXT    NOT NULL
+    text    text    NOT NULL,
+    date    text    NOT NULL,
+    company text    NOT NULL
 );"""
         create_table4 = """CREATE TABLE IF NOT EXISTS Companies (
     id           INTEGER PRIMARY KEY
                          UNIQUE
                          NOT NULL,
-    title        TEXT    NOT NULL
+    title        text    NOT NULL
                          UNIQUE,
-    number_phone TEXT,
-    password_cl  TEXT    NOT NULL
+    number_phone text,
+    password_cl  text    NOT NULL
 );"""
         self.con.cursor().execute(create_table1)  # создание отсутствующих и необходимых таблиц
         self.con.cursor().execute(create_table2)
