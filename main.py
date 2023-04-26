@@ -729,6 +729,3 @@ if __name__ == '__main__':
     application.add_handler(script_edit_post)
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, get_question))
     application.run_polling()
-    for i in range(5):
-        send_messange()
-
