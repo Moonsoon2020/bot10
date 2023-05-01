@@ -26,6 +26,11 @@ def threat():  # второй поток для рассылки
     while True:
         schedule.run_pending()
 
+async def check(update, context):
+    if not ControlBD.is_user(update.message.chat.id):
+        return -1
+    return ControlBD.get_user_post(str(update.message.from_user.id))
+
 
 def pprint(inputi, name, text):
     logger.info(str(inputi) + str(text) + str(name))
@@ -50,7 +55,7 @@ def send_messange():  # отправление рассылки
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):  # старт
     print(00)
-    if ControlBD.is_user(update.message.chat.id):
+    if check(update, context) != -1:
         text = 'Вы уже зарегистрированы.'
         await update.message.reply_text(text)
         pprint('/start', update.message.chat.username, text)
@@ -127,7 +132,7 @@ async def stop_reg(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 async def get_question(update: Update, context: ContextTypes.DEFAULT_TYPE):  # получить ответ
-    if not ControlBD.is_user(update.message.chat.id):
+    if check(update, context) == -1:
         text = 'Вы не зарегестрированы.'
         await update.message.reply_text(text)
         pprint(update.message.text, update.message.chat.username, text)
@@ -152,7 +157,7 @@ async def get_question(update: Update, context: ContextTypes.DEFAULT_TYPE):  # �
     pprint(update.message.text, update.message.chat.username, text)
 
 async def helps(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not ControlBD.is_user(update.message.chat.id):
+    if check(update, context) == -1:
         text = 'Вы не зарегестрированы.'
         await update.message.reply_text(text)
         pprint(update.message.text, update.message.chat.username, text)
@@ -188,6 +193,7 @@ async def helps(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 '/stop используется для остановки любого процесса, в котором Вы находитесь.\n' \
                 '/reg_company используется для регистрации в какой-либо компании.\n' \
                 '/edit_post изменить/выбрать роль.\n' \
+                '/geo_cod узнать адрес копании' \
                 '/unbinding используется для отключения Вас от вашей компании\n' \
                 '/all_question при вызове возвращаются все вопросы, реализованные для Вашей ' \
                 'компании.\n ' \
@@ -197,12 +203,12 @@ async def helps(update: Update, context: ContextTypes.DEFAULT_TYPE):
     pprint('/help', update.message.chat.username, text)
 
 async def unbinding_company(update: Update, context: ContextTypes.DEFAULT_TYPE):  # выход из компании
-    if not ControlBD.is_user(update.message.chat.id):
+    if check(update, context) == -1:
         text = 'Вы не зарегестрированы.'
         await update.message.reply_text(text)
         pprint(update.message.text, update.message.chat.username, text)
         return ConversationHandler.END
-    if ControlBD.get_user_post(update.message.from_user.id) == 1:
+    if check(update, context) == 1:
         text = 'Для выполнения это функции вы должны быть обычным пользователем.'
         await update.message.reply_text(text)
         pprint('/', update.message.chat.username, text)
@@ -213,13 +219,12 @@ async def unbinding_company(update: Update, context: ContextTypes.DEFAULT_TYPE):
     pprint('/unbinding', update.message.chat.username, text)
 
 async def get_file(update: Update, context: ContextTypes.DEFAULT_TYPE):  # получение xlsx файла с информацией из БД
-    if not ControlBD.is_user(update.message.chat.id):
+    if check(update, context) == -1:
         text = 'Вы не зарегестрированы.'
         await update.message.reply_text(text)
         pprint(update.message.text, update.message.chat.username, text)
         return
-    print(ControlBD.get_user_post(update.message.from_user.id) == 0, 'o')
-    if ControlBD.get_user_post(update.message.from_user.id) == 0:
+    if check(update, context) == 0:
         text = 'Для выполнения этой функции вы должны быть администратором.'
         await update.message.reply_text(text)
         pprint('/get_file', update.message.chat.username, text)
@@ -240,12 +245,12 @@ async def get_file(update: Update, context: ContextTypes.DEFAULT_TYPE):  # по�
     await update.message.reply_document(document=open('Таблица_Excel_БД.xlsx', mode='rb'))
 
 async def all_question(update: Update, context: ContextTypes.DEFAULT_TYPE):  # получение всех вопросов
-    if not ControlBD.is_user(update.message.chat.id):
+    if check(update, context) == -1:
         text = 'Вы не зарегестрированы.'
         await update.message.reply_text(text)
         pprint(update.message.text, update.message.chat.username, text)
         return
-    if ControlBD.get_user_post(update.message.from_user.id) == 1:
+    if check(update, context) == 1:
         text = 'Для выполнения это функции вы должны быть обычным пользователем.'
         await update.message.reply_text(text)
         pprint('/', update.message.chat.username, text)
@@ -261,7 +266,7 @@ async def all_question(update: Update, context: ContextTypes.DEFAULT_TYPE):  # �
     pprint('/all_question', update.message.chat.username, text)
 
 async def edit_post(update: Update, context: ContextTypes.DEFAULT_TYPE):  # редактирование роли
-    if not ControlBD.is_user(update.message.chat.id):
+    if check(update, context) == -1:
         text = 'Вы не зарегестрированы.'
         await update.message.reply_text(text)
         pprint(update.message.text, update.message.chat.username, text)
@@ -294,12 +299,12 @@ async def stop_edit_post(update: Update, context: ContextTypes.DEFAULT_TYPE):  #
     return ConversationHandler.END
 
 async def linking_company(update: Update, context: ContextTypes.DEFAULT_TYPE):  # регистрация в компании
-    if not ControlBD.is_user(update.message.chat.id):
+    if check(update, context) == -1:
         text = 'Вы не зарегестрированы.'
         await update.message.reply_text(text)
         pprint(update.message.text, update.message.chat.username, text)
         return ConversationHandler.END
-    if ControlBD.get_user_post(update.message.from_user.id) == 1:
+    if check(update, context) ==  1:
         text = 'Для выполнения это функции вы должны быть обычным пользователем.'
         await update.message.reply_text(text)
         pprint('/', update.message.chat.username, text)
@@ -346,12 +351,12 @@ async def stop_linking(update: Update, context: ContextTypes.DEFAULT_TYPE):  # �
     return ConversationHandler.END
 
 async def input_name_company(update: Update, context: ContextTypes.DEFAULT_TYPE):  # создание компании
-    if not ControlBD.is_user(update.message.chat.id):
+    if check(update, context) == -1:
         text = 'Вы не зарегестрированы.'
         await update.message.reply_text(text)
         pprint(update.message.text, update.message.chat.username, text)
         return ConversationHandler.END
-    if ControlBD.get_user_post(update.message.from_user.id) == 0:
+    if check(update, context) ==  0:
         text = 'Для создания компании вы должны быть администратором.'
         await update.message.reply_text(text)
         pprint('/new_company', update.message.chat.username, text)
@@ -394,12 +399,12 @@ async def stop_new_company(update: Update, context: ContextTypes.DEFAULT_TYPE): 
     return ConversationHandler.END
 
 async def delete_company(update: Update, context: ContextTypes.DEFAULT_TYPE):  # удаление компании
-    if not ControlBD.is_user(update.message.chat.id):
+    if check(update, context) == -1:
         text = 'Вы не зарегестрированы.'
         await update.message.reply_text(text)
         pprint(update.message.text, update.message.chat.username, text)
         return ConversationHandler.END
-    if ControlBD.get_user_post(update.message.from_user.id) == 0:
+    if check(update, context) ==  0:
         text = 'Для выполнения это функции вы должны быть администратором.'
         await update.message.reply_text(text)
         pprint('/', update.message.chat.username, text)
@@ -424,12 +429,12 @@ async def stop_del_company(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 async def add_mailing(update: Update, context: ContextTypes.DEFAULT_TYPE):  # добавление рассылки
-    if not ControlBD.is_user(update.message.chat.id):
+    if check(update, context) == -1:
         text = 'Вы не зарегестрированы.'
         await update.message.reply_text(text)
         pprint(update.message.text, update.message.chat.username, text)
         return ConversationHandler.END
-    if ControlBD.get_user_post(update.message.from_user.id) == 0:
+    if check(update, context) ==  0:
         text = 'Для выполнения это функции вы должны быть администратором.'
         await update.message.reply_text(text)
         pprint('/', update.message.chat.username, text)
@@ -495,12 +500,12 @@ async def stop_del_mailing(update: Update, context: ContextTypes.DEFAULT_TYPE): 
     return ConversationHandler.END
 
 async def add_question(update: Update, context: ContextTypes.DEFAULT_TYPE):  # редактирование вопроса
-    if not ControlBD.is_user(update.message.chat.id):
+    if check(update, context) == -1:
         text = 'Вы не зарегестрированы.'
         await update.message.reply_text(text)
         pprint(update.message.text, update.message.chat.username, text)
         return ConversationHandler.END
-    if ControlBD.get_user_post(update.message.from_user.id) == 0:
+    if check(update, context) ==  0:
         text = 'Для выполнения это функции вы должны быть администратором.'
         await update.message.reply_text(text)
         pprint('/', update.message.chat.username, text)
@@ -574,7 +579,34 @@ async def write_question_red(update: Update, context: ContextTypes.DEFAULT_TYPE)
     await update.message.reply_text(text)
     pprint(update.message.text, update.message.chat.username, text)
     return ConversationHandler.END
+async def geocoder(update, context):
+    if check(update, context) == 1:
+        text = 'Для выполнения это функции вы должны быть пользователем.'
+        await update.message.reply_text(text)
+        pprint('/', update.message.chat.username, text)
+        return
+    await update.message.reply_text('''Узнаю адрес компании...''')
+    geocoder_uri = "http://geocode-maps.yandex.ru/1.x/"
+    response = requests.get(geocoder_uri, params={
+        "apikey": "40d1649f-0493-4b70-98ba-98533de7710b",
+        "format": "json",
+        "geocode": "Нижний Новгород"
+    })
 
+    toponym = response.json()["response"]["GeoObjectCollection"][
+        "featureMember"][0]["GeoObject"]
+    toponym_coodrinates = toponym["Point"]["pos"]
+    toponym_longitude, toponym_lattitude = toponym_coodrinates.split(" ")
+    delta = "0.045"
+    ll = ",".join([toponym_longitude, toponym_lattitude])
+    spn = ",".join([delta, delta])
+
+    static_api_request = f"http://static-maps.yandex.ru/1.x/?ll={ll}&spn={spn}&l=map"
+    await context.bot.send_photo(
+        update.message.chat_id,
+        static_api_request,
+        caption="В просторах интернета сказано, что агенство находится в Нижнем Новгороде (точного адреса нет)"
+    )
 
 if __name__ == '__main__':
     ControlBD = DB()
@@ -710,8 +742,7 @@ if __name__ == '__main__':
         # Точка прерывания диалога. В данном случае — команда /stop.
         fallbacks=[CommandHandler('stop', stop_question_add)]
     )
-
-
+    application.add_handler(CommandHandler("geo_cod", geocoder))
     application.add_handler(CommandHandler("help", helps))
     application.add_handler(CommandHandler("unbinding", unbinding_company))
     application.add_handler(CommandHandler("get_xlsx_file", get_file))
