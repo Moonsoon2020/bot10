@@ -15,7 +15,9 @@ logging.basicConfig(filename='logging.log',
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.DEBUG
                     )
 k1 = KeyboardButton('Помощь')
-reply_keyboard = [[k1, '/stop']]
+k2 = KeyboardButton('Стоп')
+
+reply_keyboard = [[k1, k2]]
 markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=False, resize_keyboard=True)
 logger = logging.getLogger(__name__)
 TOKEN = '5342995443:AAEBqyRLrd5AmHEEhCNLyfHVy3td3Qvw-Ec'  # токен бота
@@ -67,6 +69,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):  # стар
     return 1
 
 async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message.text == 'Стоп':
+        await update.message.reply_text('Процесс остановлен.')
+        return ConversationHandler.END
     FIO = update.message.text.split()
     context.user_data['FIO'] = FIO[:3]
     context.user_data['Name'] = FIO[1]
@@ -82,6 +87,9 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return 3
 
 async def password_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message.text == 'Стоп':
+        await update.message.reply_text('Процесс остановлен.')
+        return ConversationHandler.END
     password = update.message.text
     if password == SUPER_PASSWORD:
         ControlBD.add_user(*context.user_data['FIO'], 1, update.message.chat.id)
@@ -96,6 +104,9 @@ async def password_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return 1
 
 async def reg_first_company(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message.text == 'Стоп':
+        await update.message.reply_text('Процесс остановлен.')
+        return ConversationHandler.END
     name_company = update.message.text
     context.user_data['NameCompany'] = name_company
     if not ControlBD.check_company(name_company):
@@ -111,6 +122,9 @@ async def reg_first_company(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return 4
 
 async def reg_first_company_password(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message.text == 'Стоп':
+        await update.message.reply_text('Процесс остановлен.')
+        return ConversationHandler.END
     password = update.message.text
     if password != context.user_data['PasswordCompany']:
         text = f'Произошла ошибка: компания или пароль введены неверно.' \
@@ -140,6 +154,9 @@ async def get_question(update: Update, context: ContextTypes.DEFAULT_TYPE):  # �
     company = ControlBD.get_user_company(str(update.message.from_user.id))
     if update.message.text == 'Помощь':
         await helps(update, context)
+        return
+    if update.message.text == 'Стоп':
+        await stop_reg(update, context)
         return
     if company is None or company == '':
         if ControlBD.get_user_post(str(update.message.from_user.id)) == 0:
@@ -277,6 +294,9 @@ async def edit_post(update: Update, context: ContextTypes.DEFAULT_TYPE):  # ре
     return 1
 
 async def edit_post_input_password(update: Update, context: ContextTypes.DEFAULT_TYPE):  # функция проверки суперпароля
+    if update.message.text == 'Стоп':
+        await update.message.reply_text('Процесс остановлен.')
+        return ConversationHandler.END
     password = update.message.text
     if password == SUPER_PASSWORD:
         ControlBD.remove_user_post(str(update.message.from_user.id))
@@ -317,6 +337,9 @@ async def linking_company(update: Update, context: ContextTypes.DEFAULT_TYPE):  
     return 1
 
 async def get_name_company(update: Update, context: ContextTypes.DEFAULT_TYPE):  # регистрация в компании
+    if update.message.text == 'Стоп':
+        await update.message.reply_text('Процесс остановлен.')
+        return ConversationHandler.END
     name_company = update.message.text
     context.user_data['NameCompany'] = name_company
     if not ControlBD.check_company(name_company):
@@ -333,6 +356,9 @@ async def get_name_company(update: Update, context: ContextTypes.DEFAULT_TYPE): 
     return 2
 
 async def get_company_password(update: Update, context: ContextTypes.DEFAULT_TYPE):  # регистрация в компании
+    if update.message.text == 'Стоп':
+        await update.message.reply_text('Процесс остановлен.')
+        return ConversationHandler.END
     if context.user_data['PasswordCompany'] != update.message.text:
         text = 'Возникла ошибка: введен неверный пароль компании.'
         await update.message.reply_text(text)
@@ -367,6 +393,9 @@ async def input_name_company(update: Update, context: ContextTypes.DEFAULT_TYPE)
     return 1
 
 async def input_password_company(update: Update, context: ContextTypes.DEFAULT_TYPE):  # создание компании
+    if update.message.text == 'Стоп':
+        await update.message.reply_text('Процесс остановлен.')
+        return ConversationHandler.END
     context.user_data['title'] = update.message.text
     if ControlBD.check_company(update.message.text):
         text = 'Компания с таким именем уже существует.'
@@ -379,6 +408,9 @@ async def input_password_company(update: Update, context: ContextTypes.DEFAULT_T
     return 2
 
 async def input_get_telephone(update: Update, context: ContextTypes.DEFAULT_TYPE):  # создание компании
+    if update.message.text == 'Стоп':
+        await update.message.reply_text('Процесс остановлен.')
+        return ConversationHandler.END
     context.user_data['password'] = update.message.text
     text = 'Введите контактный телефон владельца компании (Ваш).'
     await update.message.reply_text(text)
@@ -386,6 +418,9 @@ async def input_get_telephone(update: Update, context: ContextTypes.DEFAULT_TYPE
     return 3
 
 async def creating_company(update: Update, context: ContextTypes.DEFAULT_TYPE):  # создание компании
+    if update.message.text == 'Стоп':
+        await update.message.reply_text('Процесс остановлен.')
+        return ConversationHandler.END
     ControlBD.add_company(context.user_data['title'], update.message.text, context.user_data['password'])
     text = 'Успешно! Компания создана, а Вы её администратор.'
     await update.message.reply_text(text)
@@ -416,6 +451,9 @@ async def delete_company(update: Update, context: ContextTypes.DEFAULT_TYPE):  #
     return 1
 
 async def delete_comp(update: Update, context: ContextTypes.DEFAULT_TYPE):  # удаление компании
+    if update.message.text == 'Стоп':
+        await update.message.reply_text('Процесс остановлен.')
+        return ConversationHandler.END
     ControlBD.delete_company(update.message.text)
     text = 'Компания удалена.'
     await update.message.reply_text(text)
@@ -423,6 +461,9 @@ async def delete_comp(update: Update, context: ContextTypes.DEFAULT_TYPE):  # у
     return ConversationHandler.END
 
 async def stop_del_company(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message.text == 'Стоп':
+        await update.message.reply_text('Процесс остановлен.')
+        return ConversationHandler.END
     text = 'Отмена удаления компании.'
     await update.message.reply_text(text)
     pprint('/stop', update.message.chat.username, text)
@@ -446,6 +487,9 @@ async def add_mailing(update: Update, context: ContextTypes.DEFAULT_TYPE):  # д
     return 1
 
 async def what_company(update: Update, context: ContextTypes.DEFAULT_TYPE):  # определение компании
+    if update.message.text == 'Стоп':
+        await update.message.reply_text('Процесс остановлен.')
+        return ConversationHandler.END
     company = update.message.text
     if ControlBD.check_company(company):
         context.user_data['company'] = company
@@ -461,6 +505,9 @@ async def what_company(update: Update, context: ContextTypes.DEFAULT_TYPE):  # �
         return 1
 
 async def get_TEXT_mailing(update: Update, context: ContextTypes.DEFAULT_TYPE):  # редактирование рассылки
+    if update.message.text == 'Стоп':
+        await update.message.reply_text('Процесс остановлен.')
+        return ConversationHandler.END
     context.user_data['TEXT'] = update.message.text
     text = f'В какую(-ые) даты отправлять или уведомления в какую дату удалить? ' \
            f'Вводите через запятую с пробелом, в формете день.месяц.год.'\
@@ -470,6 +517,9 @@ async def get_TEXT_mailing(update: Update, context: ContextTypes.DEFAULT_TYPE): 
     return 3
 
 async def get_date_add(update: Update, context: ContextTypes.DEFAULT_TYPE):  # добавление рассылки
+    if update.message.text == 'Стоп':
+        await update.message.reply_text('Процесс остановлен.')
+        return ConversationHandler.END
     date = update.message.text.split(', ')
     for i in date:
         ControlBD.add_mailing(context.user_data['TEXT'], i, context.user_data['company'])
@@ -485,6 +535,9 @@ async def stop_new_mailing(update: Update, context: ContextTypes.DEFAULT_TYPE): 
     return ConversationHandler.END
 
 async def get_date_del(update: Update, context: ContextTypes.DEFAULT_TYPE):  # удаление даты
+    if update.message.text == 'Стоп':
+        await update.message.reply_text('Процесс остановлен.')
+        return ConversationHandler.END
     date = update.message.text.split(', ')
     for i in date:
         ControlBD.delete_mailing(context.user_data['TEXT'], i, context.user_data['company'])
@@ -517,6 +570,9 @@ async def add_question(update: Update, context: ContextTypes.DEFAULT_TYPE):  # �
     return 1
 
 async def add_answer(update: Update, context: ContextTypes.DEFAULT_TYPE):  # редактирование вопроса
+    if update.message.text == 'Стоп':
+        await update.message.reply_text('Процесс остановлен.')
+        return ConversationHandler.END
     context.user_data['question'] = update.message.text
     text = 'Введите ответ на вопрос.'
     await update.message.reply_text(text)
@@ -524,6 +580,9 @@ async def add_answer(update: Update, context: ContextTypes.DEFAULT_TYPE):  # р�
     return 2
 
 async def creating_question(update: Update, context: ContextTypes.DEFAULT_TYPE):  # редактирование вопроса
+    if update.message.text == 'Стоп':
+        await update.message.reply_text('Процесс остановлен.')
+        return ConversationHandler.END
     context.user_data['answer'] = update.message.text
     text = 'Введите компанию, участники которой могут задать вопрос.'
     await update.message.reply_text(text)
@@ -531,6 +590,9 @@ async def creating_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return 3
 
 async def write_question_add(update: Update, context: ContextTypes.DEFAULT_TYPE):  # добавление вопроса
+    if update.message.text == 'Стоп':
+        await update.message.reply_text('Процесс остановлен.')
+        return ConversationHandler.END
     ControlBD.add_question(context.user_data['question'], context.user_data['answer'], update.message.text)
     text = 'Вопрос добавлен.'
     await update.message.reply_text(text)
@@ -544,6 +606,9 @@ async def stop_question_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 async def write_question_del(update: Update, context: ContextTypes.DEFAULT_TYPE):  # удаление вопроса
+    if update.message.text == 'Стоп':
+        await update.message.reply_text('Процесс остановлен.')
+        return ConversationHandler.END
     context.user_data['company'] = update.message.text
     if ControlBD.check_question_all(context.user_data['question'], context.user_data['answer'],
                                          context.user_data['company']):
@@ -563,6 +628,9 @@ async def write_question_del(update: Update, context: ContextTypes.DEFAULT_TYPE)
     return ConversationHandler.END
 
 async def write_question_red(update: Update, context: ContextTypes.DEFAULT_TYPE):  # редактирование вопроса
+    if update.message.text == 'Стоп':
+        await update.message.reply_text('Процесс остановлен.')
+        return ConversationHandler.END
     context.user_data['company'] = update.message.text
     if ControlBD.check_question(context.user_data['question'], context.user_data['company']):
         ControlBD.redact_question(context.user_data['question'], context.user_data['answer'],
