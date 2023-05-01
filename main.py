@@ -59,12 +59,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):  # стар
     print(00)
     if check(update, context) != -1:
         text = 'Вы уже зарегистрированы.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint('/start', update.message.chat.username, text)
         return ConversationHandler.END
     text = f'Здравствуйте! Я смогу ответить на возникшие у Вас вопросы, но ' \
            f'для начала нужно пройти регистрацию. Напишите, пожалуйста, Ваши ФИО'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint('/start', update.message.chat.username, text)
     return 1
 
@@ -77,12 +77,12 @@ async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['Name'] = FIO[1]
     if FIO[-1] == 'Admin' or FIO[-1] == 'Админ':
         text = f'Хорошо, теперь введите пароль.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(FIO, update.message.chat.username, text)
         return 2
     else:
         text = f'Хорошо, теперь напишите название компанию, к которой вы прикриплены.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(FIO, update.message.chat.username, text)
         return 3
 
@@ -100,7 +100,7 @@ async def password_request(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         text = f'Попробуйте ещё раз, введте ФИО.'
         pprint(password, update.message.chat.username, text)
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         return 1
 
 async def reg_first_company(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -112,12 +112,12 @@ async def reg_first_company(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not ControlBD.check_company(name_company):
         text = f'Произошла ошибка: Компании с таким названием не существует. Проверьте введенные данные.' \
                f' {context.user_data["Name"]}, введите название компании, в которую хотите вступить.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(name_company, update.message.chat.username, text)
         return 3
     context.user_data['PasswordCompany'] = ControlBD.get_company_password(context.user_data['NameCompany'])
     text = 'Компания найдена. Введите пароль.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint(name_company, update.message.chat.username, text)
     return 4
 
@@ -129,7 +129,7 @@ async def reg_first_company_password(update: Update, context: ContextTypes.DEFAU
     if password != context.user_data['PasswordCompany']:
         text = f'Произошла ошибка: компания или пароль введены неверно.' \
                f'Введите название компании.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(password, update.message.chat.username, text)
         return 3
     text = f'Регистрация прошла успешно, теперь вы можете пользоваться всеми функциями бота.'
@@ -141,14 +141,14 @@ async def reg_first_company_password(update: Update, context: ContextTypes.DEFAU
 
 async def stop_reg(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = 'Регистрация отменена.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint('/stop', update.message.chat.username, text)
     return ConversationHandler.END
 
 async def get_question(update: Update, context: ContextTypes.DEFAULT_TYPE):  # получить ответ
     if check(update, context) == -1:
         text = 'Вы не зарегестрированы.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(update.message.text, update.message.chat.username, text)
         return
     company = ControlBD.get_user_company(str(update.message.from_user.id))
@@ -170,13 +170,13 @@ async def get_question(update: Update, context: ContextTypes.DEFAULT_TYPE):  # �
             text = str(ControlBD.get_answer(update.message.text, company))
         else:
             text = 'Извините, вопрос не найден.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint(update.message.text, update.message.chat.username, text)
 
 async def helps(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if check(update, context) == -1:
         text = 'Вы не зарегестрированы.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(update.message.text, update.message.chat.username, text)
         return
     if ControlBD.get_user_post(str(update.message.from_user.id)) == 1:
@@ -216,39 +216,39 @@ async def helps(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 'компании.\n ' \
                 'Все остальное бот будет принимать как вопрос, заданный Вами.\n' \
                 'Приятного использования!'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint('/help', update.message.chat.username, text)
 
 async def unbinding_company(update: Update, context: ContextTypes.DEFAULT_TYPE):  # выход из компании
     if check(update, context) == -1:
         text = 'Вы не зарегестрированы.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(update.message.text, update.message.chat.username, text)
         return ConversationHandler.END
     if check(update, context) == 1:
         text = 'Для выполнения это функции вы должны быть обычным пользователем.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint('/', update.message.chat.username, text)
         return ConversationHandler.END
     ControlBD.remove_user_company(str(update.message.from_user.id), '')
     text = f'{ControlBD.get_user_name(str(update.message.from_user.id))}, Вы вышли из компании.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint('/unbinding', update.message.chat.username, text)
 
 async def get_file(update: Update, context: ContextTypes.DEFAULT_TYPE):  # получение xlsx файла с информацией из БД
     if check(update, context) == -1:
         text = 'Вы не зарегестрированы.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(update.message.text, update.message.chat.username, text)
         return
     if check(update, context) == 0:
         text = 'Для выполнения этой функции вы должны быть администратором.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint('/get_file', update.message.chat.username, text)
         return
     text = f'Подождите, происходит формирование таблицы, загрузка и отправление... ' \
            f'Это займет несколько минут. Спасибо за ожидание.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint('/get_xlsx_file', update.message.chat.username, text)
     workbook = xlsxwriter.Workbook('Таблица_Excel_БД.xlsx')
     data = ControlBD.get_info_for_file()
@@ -264,12 +264,12 @@ async def get_file(update: Update, context: ContextTypes.DEFAULT_TYPE):  # по�
 async def all_question(update: Update, context: ContextTypes.DEFAULT_TYPE):  # получение всех вопросов
     if check(update, context) == -1:
         text = 'Вы не зарегестрированы.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(update.message.text, update.message.chat.username, text)
         return
     if check(update, context) == 1:
         text = 'Для выполнения это функции вы должны быть обычным пользователем.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint('/', update.message.chat.username, text)
         return
     company = ControlBD.get_user_company(str(update.message.from_user.id))
@@ -279,17 +279,17 @@ async def all_question(update: Update, context: ContextTypes.DEFAULT_TYPE):  # �
     else:
         text = f'{ControlBD.get_user_name(str(update.message.from_user.id))}, для Вашей' \
                f' компании не реализованны вопросы.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint('/all_question', update.message.chat.username, text)
 
 async def edit_post(update: Update, context: ContextTypes.DEFAULT_TYPE):  # редактирование роли
     if check(update, context) == -1:
         text = 'Вы не зарегестрированы.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(update.message.text, update.message.chat.username, text)
         return ConversationHandler.END
     text = f'{ControlBD.get_user_name(str(update.message.from_user.id))}, введите пароль.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint('/edit_post', update.message.chat.username, text)
     return 1
 
@@ -302,37 +302,37 @@ async def edit_post_input_password(update: Update, context: ContextTypes.DEFAULT
         ControlBD.remove_user_post(str(update.message.from_user.id))
         ControlBD.remove_user_company(str(update.message.from_user.id), '')
         text = 'Успешно! Ваша роль изменена.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(password, update.message.chat.username, text)
         return ConversationHandler.END
     else:
         text = f'Для того чтобы сменить роль, нужно '\
                f'ввести выданный Вам пароль: Например: 0000'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(password, update.message.chat.username, text)
         return 1
 
 async def stop_edit_post(update: Update, context: ContextTypes.DEFAULT_TYPE):  # завершение
     text = 'Редактирование роли остановлено.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint('/stop', update.message.chat.username, text)
     return ConversationHandler.END
 
 async def linking_company(update: Update, context: ContextTypes.DEFAULT_TYPE):  # регистрация в компании
     if check(update, context) == -1:
         text = 'Вы не зарегестрированы.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(update.message.text, update.message.chat.username, text)
         return ConversationHandler.END
     if check(update, context) ==  1:
         text = 'Для выполнения это функции вы должны быть обычным пользователем.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint('/', update.message.chat.username, text)
         return ConversationHandler.END
     logger.info('привязка к компании')
     text = f'{ControlBD.get_user_name(str(update.message.from_user.id))}, введ' \
            f'ите название компании, в которую хотите вступить.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint('/linking', update.message.chat.username, text)
     return 1
 
@@ -346,12 +346,12 @@ async def get_name_company(update: Update, context: ContextTypes.DEFAULT_TYPE): 
         text = f'Произошла ошибка: Компании с такимmназванием не существует. Проверьте введенные данные.'
         text += f'{ControlBD.get_user_name(str(update.message.from_user.id))}, введите ' \
                 f'название компании, в которую хотите вступить.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(name_company, update.message.chat.username, text)
         return 1
     context.user_data['PasswordCompany'] = ControlBD.get_company_password(name_company)
     text = 'Компания найдена. Введите пароль.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint(name_company, update.message.chat.username, text)
     return 2
 
@@ -361,34 +361,34 @@ async def get_company_password(update: Update, context: ContextTypes.DEFAULT_TYP
         return ConversationHandler.END
     if context.user_data['PasswordCompany'] != update.message.text:
         text = 'Возникла ошибка: введен неверный пароль компании.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(update.message.text, update.message.chat.username, text)
         return 1
     ControlBD.remove_user_company(str(update.message.from_user.id), context.user_data['NameCompany'])
     text = f'{ControlBD.get_user_name(str(update.message.from_user.id))}, Вы успешно вступили компанию.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint(update.message.text, update.message.chat.username, text)
     return ConversationHandler.END
 
 async def stop_linking(update: Update, context: ContextTypes.DEFAULT_TYPE):  # завершение
     text = '''Теперь Вы можете вступить в компанию. Для этого напишите или нажмите на /reg_company'''
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint('/stop', update.message.chat.username, text)
     return ConversationHandler.END
 
 async def input_name_company(update: Update, context: ContextTypes.DEFAULT_TYPE):  # создание компании
     if check(update, context) == -1:
         text = 'Вы не зарегестрированы.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(update.message.text, update.message.chat.username, text)
         return ConversationHandler.END
     if check(update, context) ==  0:
         text = 'Для создания компании вы должны быть администратором.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint('/new_company', update.message.chat.username, text)
         return ConversationHandler.END
     text = 'Введите будущее название компании.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint('/new_company', update.message.chat.username, text)
     return 1
 
@@ -399,11 +399,11 @@ async def input_password_company(update: Update, context: ContextTypes.DEFAULT_T
     context.user_data['title'] = update.message.text
     if ControlBD.check_company(update.message.text):
         text = 'Компания с таким именем уже существует.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(update.message.text, update.message.chat.username, text)
         return 1
     text = 'Введите пароль компании для входа пользователей.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint(update.message.text, update.message.chat.username, text)
     return 2
 
@@ -413,7 +413,7 @@ async def input_get_telephone(update: Update, context: ContextTypes.DEFAULT_TYPE
         return ConversationHandler.END
     context.user_data['password'] = update.message.text
     text = 'Введите контактный телефон владельца компании (Ваш).'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint(update.message.text, update.message.chat.username, text)
     return 3
 
@@ -423,30 +423,30 @@ async def creating_company(update: Update, context: ContextTypes.DEFAULT_TYPE): 
         return ConversationHandler.END
     ControlBD.add_company(context.user_data['title'], update.message.text, context.user_data['password'])
     text = 'Успешно! Компания создана, а Вы её администратор.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint(update.message.text, update.message.chat.username, text)
     return ConversationHandler.END
 
 async def stop_new_company(update: Update, context: ContextTypes.DEFAULT_TYPE):  # завершение
     text = 'Остановка создания компании.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint('/stop', update.message.chat.username,text)
     return ConversationHandler.END
 
 async def delete_company(update: Update, context: ContextTypes.DEFAULT_TYPE):  # удаление компании
     if check(update, context) == -1:
         text = 'Вы не зарегестрированы.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(update.message.text, update.message.chat.username, text)
         return ConversationHandler.END
     if check(update, context) ==  0:
         text = 'Для выполнения это функции вы должны быть администратором.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint('/', update.message.chat.username, text)
         return ConversationHandler.END
     text = f'Введите название компании, которую хотите' \
            f' удалить. ВНИМАНИЕ: это действие отменить будет невозможно.'''
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint('/del_company', update.message.chat.username, text)
     return 1
 
@@ -456,7 +456,7 @@ async def delete_comp(update: Update, context: ContextTypes.DEFAULT_TYPE):  # у
         return ConversationHandler.END
     ControlBD.delete_company(update.message.text)
     text = 'Компания удалена.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint(update.message.chat, update.message.chat.username, text)
     return ConversationHandler.END
 
@@ -465,24 +465,24 @@ async def stop_del_company(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text('Процесс остановлен.')
         return ConversationHandler.END
     text = 'Отмена удаления компании.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint('/stop', update.message.chat.username, text)
     return ConversationHandler.END
 
 async def add_mailing(update: Update, context: ContextTypes.DEFAULT_TYPE):  # добавление рассылки
     if check(update, context) == -1:
         text = 'Вы не зарегестрированы.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(update.message.text, update.message.chat.username, text)
         return ConversationHandler.END
     if check(update, context) ==  0:
         text = 'Для выполнения это функции вы должны быть администратором.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint('/', update.message.chat.username, text)
         return ConversationHandler.END
     text = f'{ControlBD.get_user_name(str(update.message.from_user.id))}, уведомления для '\
            f'пользователей какой компании Вы хотите добавить/удалить?'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint('add_mailing', update.message.chat.username, text)
     return 1
 
@@ -494,13 +494,13 @@ async def what_company(update: Update, context: ContextTypes.DEFAULT_TYPE):  # �
     if ControlBD.check_company(company):
         context.user_data['company'] = company
         text = 'Какое сообщение хотите, чтоб отправлялось/удалялось?'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(company, update.message.chat.username, text)
         return 2
     else:
         text = 'Ошибка: компания с таким названием не найдена. ' \
                'Уведомления для пользователей какой компании Вы хотите добавить/удалить?'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(company, update.message.chat.username, text)
         return 1
 
@@ -512,7 +512,7 @@ async def get_TEXT_mailing(update: Update, context: ContextTypes.DEFAULT_TYPE): 
     text = f'В какую(-ые) даты отправлять или уведомления в какую дату удалить? ' \
            f'Вводите через запятую с пробелом, в формете день.месяц.год.'\
            f'Например: 25.05.2022, 23.02.2023'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint(update.message.text, update.message.chat.username, text)
     return 3
 
@@ -524,13 +524,13 @@ async def get_date_add(update: Update, context: ContextTypes.DEFAULT_TYPE):  # �
     for i in date:
         ControlBD.add_mailing(context.user_data['TEXT'], i, context.user_data['company'])
     text = 'Успешно! Уведомления ждут своей отправки.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint(date, update.message.chat.username, text)
     return ConversationHandler.END
 
 async def stop_new_mailing(update: Update, context: ContextTypes.DEFAULT_TYPE):  # завершение
     text = 'Добавление уведомления остановлено.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint('/stop', update.message.chat.username, text)
     return ConversationHandler.END
 
@@ -542,30 +542,30 @@ async def get_date_del(update: Update, context: ContextTypes.DEFAULT_TYPE):  # �
     for i in date:
         ControlBD.delete_mailing(context.user_data['TEXT'], i, context.user_data['company'])
     text = 'Успешно! Дата удалена.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint(date, update.message.chat.username, text)
     return ConversationHandler.END
 
 async def stop_del_mailing(update: Update, context: ContextTypes.DEFAULT_TYPE):  # завершение
     text = 'Удаление рассылки остановлено.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint('/stop', update.message.chat.username, text)
     return ConversationHandler.END
 
 async def add_question(update: Update, context: ContextTypes.DEFAULT_TYPE):  # редактирование вопроса
     if check(update, context) == -1:
         text = 'Вы не зарегестрированы.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(update.message.text, update.message.chat.username, text)
         return ConversationHandler.END
     if check(update, context) ==  0:
         text = 'Для выполнения это функции вы должны быть администратором.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint('/', update.message.chat.username, text)
         return ConversationHandler.END
     text = f'{ControlBD.get_user_name(str(update.message.from_user.id))}, введите вопрос,' \
            f' который нужно добавить/редактировать/удалить.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint('/add_question', update.message.chat.username, text)
     return 1
 
@@ -575,7 +575,7 @@ async def add_answer(update: Update, context: ContextTypes.DEFAULT_TYPE):  # р�
         return ConversationHandler.END
     context.user_data['question'] = update.message.text
     text = 'Введите ответ на вопрос.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint(update.message.text, update.message.chat.username, text)
     return 2
 
@@ -585,7 +585,7 @@ async def creating_question(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return ConversationHandler.END
     context.user_data['answer'] = update.message.text
     text = 'Введите компанию, участники которой могут задать вопрос.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint(update.message.text, update.message.chat.username, text)
     return 3
 
@@ -595,13 +595,13 @@ async def write_question_add(update: Update, context: ContextTypes.DEFAULT_TYPE)
         return ConversationHandler.END
     ControlBD.add_question(context.user_data['question'], context.user_data['answer'], update.message.text)
     text = 'Вопрос добавлен.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint(update.message.text, update.message.chat.username, text)
     return ConversationHandler.END
 
 async def stop_question_add(update: Update, context: ContextTypes.DEFAULT_TYPE):  # завершение
     text = 'Добавление/редактирование/удаление вопроса остановлено.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint(update.message.text, update.message.chat.username, text)
     return ConversationHandler.END
 
@@ -616,14 +616,14 @@ async def write_question_del(update: Update, context: ContextTypes.DEFAULT_TYPE)
                                        context.user_data['company'])
     else:
         text = 'Ошибка: вопроса с такими характеристиками не существует.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(update.message.text, update.message.chat.username, text)
         text = 'Введите вопрос, который нужно добавить/редактировать/удалить.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(update.message.text, update.message.chat.username, text)
         return 1
     text = 'Вопрос удален.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint(update.message.text, update.message.chat.username, text)
     return ConversationHandler.END
 
@@ -637,20 +637,20 @@ async def write_question_red(update: Update, context: ContextTypes.DEFAULT_TYPE)
                            update.message.text)
     else:
         text = 'Ошибка: данного вопроса у данной компании не существует.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(update.message.text, update.message.chat.username, text)
         text = 'Введите вопрос, который нужно добавить/редактировать/удалить.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint(update.message.text, update.message.chat.username, text)
         return 1
     text = 'Вопрос изменен.'
-    await update.message.reply_text(text)
+    await update.message.reply_text(text, reply_markup=markup)
     pprint(update.message.text, update.message.chat.username, text)
     return ConversationHandler.END
 async def geocoder(update, context):
     if check(update, context) == 1:
         text = 'Для выполнения это функции вы должны быть пользователем.'
-        await update.message.reply_text(text)
+        await update.message.reply_text(text, reply_markup=markup)
         pprint('/', update.message.chat.username, text)
         return
     await update.message.reply_text('''Узнаю адрес компании...''')
